@@ -23,9 +23,13 @@ export async function handleRequest(request: Request): Promise<Response> {
     return new Response(null, { status: 405 });
 }
 
-const notPromotionUrlRegExpList = [
-    /a\.m\.taobao\.com/,
-    /item\.taobao\.com/
+const maybePromotionUrlRegExpList = [
+    /uland.taobao\.com/,
+    /s\.click\.taobao\.com/,
+    /ai\.taobao\.com/,
+    /temai\.taobao\.com/,
+    /ut_sk=[^=&]*((?:lianmeng)|(?:yitao))/,
+    /alimama/
 ];
 
 async function detectedWithShortUrl(url: string) {
@@ -35,7 +39,7 @@ async function detectedWithShortUrl(url: string) {
     if (longUrlRet != null) {
         // match success
         const longUrl = new URL(longUrlRet[2]);
-        if (notPromotionUrlRegExpList.every(reg => !reg.test(longUrl.hostname))) {
+        if (maybePromotionUrlRegExpList.some(reg => reg.test(longUrl.toString()))) {
             return `${url} 疑似推广链接：${longUrl}`;
         }
     }
@@ -56,7 +60,7 @@ async function detectedWithCode(text: string) {
         );
         if (ret.code === 1 && typeof ret.url === 'string' && ret.url.length > 0) {
             const longUrl = new URL(ret.url);
-            if (notPromotionUrlRegExpList.every(reg => !reg.test(longUrl.hostname))) {
+            if (maybePromotionUrlRegExpList.some(reg => reg.test(longUrl.toString()))) {
                 return `${text} 疑似推广链接：${longUrl}`;
             }
         }
