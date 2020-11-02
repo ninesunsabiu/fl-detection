@@ -20,8 +20,13 @@ export async function handleRequest(request: Request): Promise<Response> {
             return new Response(detectedRet, { headers: responseHeader });
         }
     }
-    return new Response('ok', { headers: responseHeader });
+    return new Response(null, { status: 405 });
 }
+
+const notPromotionUrlRegExpList = [
+    /a\.m\.taobao\.com/,
+    /item\.taobao\.com/
+];
 
 async function detectedWithShortUrl(url: string) {
     const resText = await fetch(url).then((res) => res.text());
@@ -30,7 +35,7 @@ async function detectedWithShortUrl(url: string) {
     if (longUrlRet != null) {
         // match success
         const longUrl = new URL(longUrlRet[2]);
-        if (!/a\.m\.taobao\.com/.test(longUrl.hostname)) {
+        if (notPromotionUrlRegExpList.every(reg => !reg.test(longUrl.hostname))) {
             return `${url} 疑似推广链接：${longUrl}`;
         }
     }
@@ -51,8 +56,8 @@ async function detectedWithCode(text: string) {
         );
         if (ret.code === 1 && typeof ret.url === 'string' && ret.url.length > 0) {
             const longUrl = new URL(ret.url);
-            if (!/a\.m\.taobao\.com/.test(longUrl.hostname)) {
-                return `${text} 疑似指向推广链接：${longUrl}`;
+            if (notPromotionUrlRegExpList.every(reg => !reg.test(longUrl.hostname))) {
+                return `${text} 疑似推广链接：${longUrl}`;
             }
         }
     }
