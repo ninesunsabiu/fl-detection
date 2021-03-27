@@ -1,3 +1,6 @@
+// ENV
+declare const ApiKey: string;
+
 export async function handleRequest(request: Request): Promise<Response> {
     const { headers, method } = request;
     const origin = headers.get('origin');
@@ -55,7 +58,7 @@ async function detectedWithCode(text: string) {
     const codeRet = codeReg.exec(text);
     if (codeRet != null) {
         const code = codeRet[0];
-        const ret = await fetch(`https://api.taokouling.com/tkl/tkljm?apikey=FvwGgYJdEt&tkl=${code}`).then((ret) =>
+        const ret = await fetch(`https://api.taokouling.com/tkl/tkljm?apikey=${ApiKey}&tkl=${code}`).then((ret) =>
             ret.json()
         );
         if (ret.code === 1 && typeof ret.url === 'string' && ret.url.length > 0) {
